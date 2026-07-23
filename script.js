@@ -6,7 +6,7 @@
  */
 
 /* ─── CONSTANTS ──────────────────────────────────────────── */
-const YEAR = 2026;
+const YEAR = new Date().getFullYear();
 const MONTH_NAMES = ['January','February','March','April','May','June',
                      'July','August','September','October','November','December'];
 const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -23,6 +23,7 @@ const State = {
   habits:       [],        // [{id,icon,name,color}]
   data:         {},        // {"YYYY-MM-DD": {habitId: bool, mood, water, weight, duration, notes}}
   selectedDate: null,      // "YYYY-MM-DD"
+  currentYear:  new Date().getFullYear(),
   currentMonth: 0,         // 0-11
   view:         'month',   // 'month' | 'year'
   filter:       'all',     // 'all' | habitId
@@ -32,14 +33,15 @@ const State = {
     this.habits = JSON.parse(localStorage.getItem('hf_habits') || 'null') || [...DEFAULT_HABITS];
     this.data   = JSON.parse(localStorage.getItem('hf_data')   || '{}');
     this.theme  = localStorage.getItem('hf_theme') || 'dark';
-    this.currentMonth = new Date().getFullYear() === YEAR
-      ? new Date().getMonth()
-      : 0;
+    this.currentYear  = parseInt(localStorage.getItem('hf_year')) || new Date().getFullYear();
+    this.currentMonth = new Date().getMonth();
+    this.selectedDate = todayStr();
   },
   save() {
     localStorage.setItem('hf_habits', JSON.stringify(this.habits));
     localStorage.setItem('hf_data',   JSON.stringify(this.data));
     localStorage.setItem('hf_theme',  this.theme);
+    localStorage.setItem('hf_year',   this.currentYear);
   },
 
   /** Get or init day record */
@@ -90,10 +92,11 @@ const State = {
   /** Longest streak across the year */
   longestStreak() {
     let longest = 0, current = 0;
+    const y = this.currentYear;
     for (let m=0;m<12;m++) {
-      const days = daysInMonth(YEAR, m);
+      const days = daysInMonth(y, m);
       for (let d=1;d<=days;d++) {
-        const s = dateStr(new Date(YEAR,m,d));
+        const s = dateStr(new Date(y,m,d));
         if (this.completedCount(s) > 0) { current++; longest = Math.max(longest,current); }
         else current = 0;
       }
@@ -104,11 +107,12 @@ const State = {
   /** Overall completion % for the year up to today */
   overallPct() {
     const today = todayStr();
+    const y = this.currentYear;
     let total=0, done=0;
     for (let m=0;m<12;m++) {
-      const days = daysInMonth(YEAR,m);
+      const days = daysInMonth(y,m);
       for (let d=1;d<=days;d++) {
-        const s = dateStr(new Date(YEAR,m,d));
+        const s = dateStr(new Date(y,m,d));
         if (s > today) break;
         total++;
         if (this.completedCount(s) > 0) done++;
@@ -126,6 +130,16 @@ function dateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function todayStr() { return dateStr(new Date()); }
+function goToday() {
+  const today = todayStr();
+  const d = new Date();
+  State.currentYear  = d.getFullYear();
+  State.currentMonth = d.getMonth();
+  State.save();
+  UI.setView('month');
+  Calendar.selectDay(today, null);
+  showToast('Jumped to today 📅');
+}
 function parseDateStr(s) {
   const [y,m,d] = s.split('-').map(Number);
   return new Date(y, m-1, d);
@@ -195,16 +209,19 @@ const Calendar = {
   },
 
   renderMonth() {
+    const y     = State.currentYear;
     const m     = State.currentMonth;
     const title = document.getElementById('calTitle');
-    if (title) title.textContent = `${MONTH_NAMES[m]} ${YEAR}`;
+    if (title) title.textContent = `${MONTH_NAMES[m]} ${y}`;
+    const logoYear = document.getElementById('logoYear');
+    if (logoYear) logoYear.textContent = y;
 
     const grid  = document.getElementById('daysGrid');
     if (!grid) return;
     grid.innerHTML = '';
 
-    const firstDay = new Date(YEAR, m, 1).getDay(); // 0=Sun
-    const days     = daysInMonth(YEAR, m);
+    const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+    const days     = daysInMonth(y, m);
     const today    = todayStr();
 
     // empty cells
@@ -215,9 +232,9 @@ const Calendar = {
     }
 
     for (let d=1; d<=days; d++) {
-      const s      = `${YEAR}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const s      = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const cell   = document.createElement('div');
-      const dow    = new Date(YEAR,m,d).getDay();
+      const dow    = new Date(y,m,d).getDay();
       const level  = State.completionLevel(s);
       const filter = State.filter;
 
@@ -273,6 +290,12 @@ const Calendar = {
     if (!grid) return;
     grid.innerHTML = '';
     const today = todayStr();
+    const y     = State.currentYear;
+
+    const yh = document.getElementById('yearHeading');
+    if (yh) yh.textContent = `${y} — Year at a Glance`;
+    const logoYear = document.getElementById('logoYear');
+    if (logoYear) logoYear.textContent = y;
 
     for (let m=0; m<12; m++) {
       const wrap = document.createElement('div');
@@ -296,16 +319,16 @@ const Calendar = {
         mg.appendChild(wd);
       });
 
-      const firstDay = new Date(YEAR,m,1).getDay();
+      const firstDay = new Date(y,m,1).getDay();
       for (let i=0; i<firstDay; i++) {
         const e = document.createElement('div'); e.className='mini-day empty'; mg.appendChild(e);
       }
 
-      const days = daysInMonth(YEAR,m);
+      const days = daysInMonth(y,m);
       for (let d=1; d<=days; d++) {
-        const s   = `${YEAR}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const s   = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const el  = document.createElement('div');
-        const dow = new Date(YEAR,m,d).getDay();
+        const dow = new Date(y,m,d).getDay();
         const lvl = State.completionLevel(s);
         let cls   = 'mini-day';
         if (s===today)        cls+=' today';
@@ -338,8 +361,25 @@ const Calendar = {
   },
 
   goMonth(delta) {
-    State.currentMonth = Math.max(0, Math.min(11, State.currentMonth + delta));
+    State.currentMonth += delta;
+    if (State.currentMonth > 11) {
+      State.currentMonth = 0;
+      State.currentYear++;
+    } else if (State.currentMonth < 0) {
+      State.currentMonth = 11;
+      State.currentYear--;
+    }
+    State.save();
     this.render();
+    Stats.render();
+  },
+
+  goYear(delta) {
+    State.currentYear += delta;
+    State.save();
+    this.render();
+    Stats.render();
+    showToast(`Calendar set to ${State.currentYear} 📅`);
   },
 };
 
@@ -591,6 +631,18 @@ const UI = {
   bindNav() {
     document.getElementById('prevMonth').addEventListener('click', () => Calendar.goMonth(-1));
     document.getElementById('nextMonth').addEventListener('click', () => Calendar.goMonth(+1));
+    const pY = document.getElementById('prevYear');
+    if (pY) pY.addEventListener('click', () => Calendar.goYear(-1));
+    const nY = document.getElementById('nextYear');
+    if (nY) nY.addEventListener('click', () => Calendar.goYear(+1));
+    const pYV = document.getElementById('prevYearView');
+    if (pYV) pYV.addEventListener('click', () => Calendar.goYear(-1));
+    const nYV = document.getElementById('nextYearView');
+    if (nYV) nYV.addEventListener('click', () => Calendar.goYear(+1));
+    const todayBtn = document.getElementById('todayBtn');
+    if (todayBtn) todayBtn.addEventListener('click', () => goToday());
+    const jumpTodayBtn = document.getElementById('jumpTodayBtn');
+    if (jumpTodayBtn) jumpTodayBtn.addEventListener('click', () => goToday());
     document.getElementById('btnMonthView').addEventListener('click', () => this.setView('month'));
     document.getElementById('btnYearView' ).addEventListener('click', () => this.setView('year'));
   },
@@ -617,36 +669,36 @@ const UI = {
   },
 
   searchDate(query) {
-    // Try to parse "20 July 2026" or "2026-07-20"
     query = query.replace(/\s+/g,' ').trim();
     let d = null;
 
-    // ISO format
     if (/^\d{4}-\d{2}-\d{2}$/.test(query)) {
       d = new Date(query + 'T00:00:00');
     } else {
-      // Natural language
       const months = MONTH_NAMES.map(m => m.toLowerCase());
       const parts  = query.split(' ');
       let dayN, monthN, yearN;
       parts.forEach(p => {
         const num = parseInt(p);
         if (!isNaN(num) && num >= 1 && num <= 31 && !dayN)   dayN  = num;
-        if (!isNaN(num) && num === YEAR)                       yearN = num;
+        if (!isNaN(num) && num >= 1900 && num <= 2100)        yearN = num;
         const mi = months.indexOf(p.toLowerCase());
         if (mi !== -1) monthN = mi;
       });
+      const targetYear = yearN || State.currentYear;
       if (dayN !== undefined && monthN !== undefined) {
-        d = new Date(YEAR, monthN, dayN);
+        d = new Date(targetYear, monthN, dayN);
       }
     }
 
-    if (!d || isNaN(d.getTime()) || d.getFullYear() !== YEAR) {
-      showToast('Date not found. Try "20 July 2026"'); return;
+    if (!d || isNaN(d.getTime())) {
+      showToast('Date not found. Try "20 July 2026" or "2026-07-20"'); return;
     }
 
-    const s = dateStr(d);
+    State.currentYear  = d.getFullYear();
     State.currentMonth = d.getMonth();
+    State.save();
+    const s = dateStr(d);
     this.setView('month');
     Calendar.selectDay(s, null);
     showToast(`📅 Jumped to ${formatDate(s)}`);
@@ -729,7 +781,19 @@ const UI = {
   renderSelectedDay() {
     const s   = State.selectedDate;
     const lbl = document.getElementById('selectedDateLabel');
-    if (lbl) lbl.textContent = s ? formatDate(s) : 'Select a day';
+    const jumpBtn = document.getElementById('jumpTodayBtn');
+    const today   = todayStr();
+
+    if (lbl) {
+      if (s) {
+        const isToday = s === today;
+        lbl.innerHTML = `${formatDate(s)} ${isToday ? '<span class="today-badge">TODAY</span>' : ''}`;
+        if (jumpBtn) jumpBtn.classList.toggle('hidden', isToday);
+      } else {
+        lbl.textContent = 'Select a day';
+        if (jumpBtn) jumpBtn.classList.add('hidden');
+      }
+    }
 
     if (!s) return;
     const day = State.data[s] || {};
@@ -872,7 +936,7 @@ const App = {
     });
     const csv  = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type:'text/csv' });
-    this._download(blob, 'habitflow_2026.csv');
+    this._download(blob, `habitflow_${State.currentYear}.csv`);
     showToast('📊 CSV exported');
   },
 
@@ -884,7 +948,7 @@ const App = {
   backupJSON() {
     const data = { habits: State.habits, data: State.data, exported: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
-    this._download(blob, 'habitflow_2026_backup.json');
+    this._download(blob, `habitflow_backup_${State.currentYear}.json`);
     showToast('💾 Backup saved');
   },
 
@@ -893,13 +957,16 @@ const App = {
   },
 
   resetYear() {
-    if (!confirm('Reset ALL data for 2026? This cannot be undone.')) return;
-    State.data = {};
+    if (!confirm(`Reset ALL data for year ${State.currentYear}? This cannot be undone.`)) return;
+    const prefix = `${State.currentYear}-`;
+    Object.keys(State.data).forEach(k => {
+      if (k.startsWith(prefix)) delete State.data[k];
+    });
     State.save();
     Calendar.render();
     Stats.render();
     UI.renderSelectedDay();
-    showToast('Year reset ✓');
+    showToast(`Year ${State.currentYear} reset ✓`);
   },
 
   _download(blob, filename) {
@@ -950,14 +1017,12 @@ document.addEventListener('DOMContentLoaded', () => {
   Habits.render();
   Stats.render();
 
-  // Select today if it's 2026
-  const now = new Date();
-  if (now.getFullYear() === YEAR) {
-    State.selectedDate = todayStr();
-    UI.renderSelectedDay();
-    Calendar.render();
-    Habits.render();
-  }
+  // Always select today's date on boot
+  State.selectedDate = todayStr();
+  State.currentMonth = new Date().getMonth();
+  UI.renderSelectedDay();
+  Calendar.render();
+  Habits.render();
 
   // Scroll-animate stat bars on first view
   const io = new IntersectionObserver(entries => {

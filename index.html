@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>2026 Habit & Work Calendar</title>
+<title>Habit & Work Calendar</title>
 <link rel="stylesheet" href="style.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
@@ -15,11 +15,11 @@
   <div class="header-left">
     <div class="app-logo">
       <span class="logo-icon">◈</span>
-      <span class="logo-text">HabitFlow <span class="logo-year">2026</span></span>
+      <span class="logo-text">HabitFlow <span class="logo-year" id="logoYear"></span></span>
     </div>
     <div class="header-search">
       <span class="search-icon">⌕</span>
-      <input type="text" id="searchInput" placeholder="Search date… e.g. 20 July 2026" autocomplete="off"/>
+      <input type="text" id="searchInput" placeholder="Search date… e.g. 20 July" autocomplete="off"/>
       <kbd class="search-kbd">⌘K</kbd>
     </div>
   </div>
@@ -59,9 +59,14 @@
 
     <!-- Month View Controls -->
     <div class="cal-controls" id="calControls">
-      <button class="nav-btn" id="prevMonth">‹</button>
-      <h2 class="cal-title" id="calTitle">January 2026</h2>
-      <button class="nav-btn" id="nextMonth">›</button>
+      <div class="cal-nav-group">
+        <button class="year-nav-btn" id="prevYear" title="Previous Year">« Year</button>
+        <button class="nav-btn" id="prevMonth" title="Previous Month">‹</button>
+        <button class="today-btn" id="todayBtn" title="Jump to Today">Today</button>
+        <button class="nav-btn" id="nextMonth" title="Next Month">›</button>
+        <button class="year-nav-btn" id="nextYear" title="Next Year">Year »</button>
+      </div>
+      <h2 class="cal-title" id="calTitle"></h2>
     </div>
 
     <!-- Month View -->
@@ -75,7 +80,11 @@
 
     <!-- Year View -->
     <div id="yearView" class="year-view hidden">
-      <h2 class="year-heading">2026 — Year at a Glance</h2>
+      <div class="year-header-controls">
+        <button class="year-nav-btn" id="prevYearView" title="Previous Year">« Previous Year</button>
+        <h2 class="year-heading" id="yearHeading">Year at a Glance</h2>
+        <button class="year-nav-btn" id="nextYearView" title="Next Year">Next Year »</button>
+      </div>
       <div class="year-grid" id="yearGrid"></div>
     </div>
 
@@ -86,7 +95,10 @@
 
     <!-- Selected Day Info -->
     <div class="glass-card selected-day-card" id="selectedDayCard">
-      <div class="selected-date" id="selectedDateLabel">Select a day</div>
+      <div class="selected-day-header">
+        <div class="selected-date" id="selectedDateLabel">Select a day</div>
+        <button class="jump-today-btn hidden" id="jumpTodayBtn" title="Return to today's date">📍 Today</button>
+      </div>
       <div class="day-meta">
         <div class="mood-row">
           <span class="meta-label">Mood</span>
