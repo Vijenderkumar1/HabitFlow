@@ -34,8 +34,22 @@ const State = {
   filter:       'all',     // 'all' | habitId
   theme:        'dark',
 
+  getUserKey() {
+    return (typeof Auth !== 'undefined' && Auth.currentUser) ? `_${Auth.currentUser.sub}` : '';
+  },
+
+  loadUserData() {
+    this.load();
+    if (typeof Calendar !== 'undefined') Calendar.render();
+    if (typeof Habits !== 'undefined')   Habits.render();
+    if (typeof FilterBar !== 'undefined') FilterBar.render();
+    if (typeof Stats !== 'undefined')    Stats.render();
+    if (typeof UI !== 'undefined')       UI.renderSelectedDay();
+  },
+
   load() {
-    let loaded = JSON.parse(localStorage.getItem('hf_habits') || 'null');
+    const key = this.getUserKey();
+    let loaded = JSON.parse(localStorage.getItem(`hf_habits${key}`) || 'null');
     if (!loaded || loaded.length === 0) {
       this.habits = [...DEFAULT_HABITS];
     } else {
@@ -55,17 +69,18 @@ const State = {
       });
     }
     this.save();
-    this.data   = JSON.parse(localStorage.getItem('hf_data')   || '{}');
+    this.data   = JSON.parse(localStorage.getItem(`hf_data${key}`) || '{}');
     this.theme  = localStorage.getItem('hf_theme') || 'dark';
     this.currentYear  = parseInt(localStorage.getItem('hf_year')) || new Date().getFullYear();
     this.currentMonth = new Date().getMonth();
     this.selectedDate = todayStr();
   },
   save() {
-    localStorage.setItem('hf_habits', JSON.stringify(this.habits));
-    localStorage.setItem('hf_data',   JSON.stringify(this.data));
-    localStorage.setItem('hf_theme',  this.theme);
-    localStorage.setItem('hf_year',   this.currentYear);
+    const key = this.getUserKey();
+    localStorage.setItem(`hf_habits${key}`, JSON.stringify(this.habits));
+    localStorage.setItem(`hf_data${key}`,   JSON.stringify(this.data));
+    localStorage.setItem('hf_theme',         this.theme);
+    localStorage.setItem('hf_year',          this.currentYear);
   },
 
   /** Get or init day record */
@@ -1066,8 +1081,70 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+/* ─── GOOGLE AUTH & USER SYNC ───────────────────────────── */
+const Auth = {
+  currentUser: null,
+
+  init() {
+    this.currentUser = JSON.parse(localStorage.getItem('hf_google_user') || 'null');
+    this.render();
+
+    const gBtn = document.getElementById('googleAuthBtn');
+    if (gBtn) gBtn.addEventListener('click', () => this.signInPrompt());
+
+    const sBtn = document.getElementById('signOutBtn');
+    if (sBtn) sBtn.addEventListener('click', () => this.signOut());
+  },
+
+  signInPrompt() {
+    const input = prompt("Sign in with Google - Enter your Google Account Name or Email:", "Student User");
+    if (!input) return;
+    const name  = input.includes('@') ? input.split('@')[0] : input;
+    const email = input.includes('@') ? input : input.toLowerCase().replace(/\s+/g,'') + '@gmail.com';
+    const sub   = 'g_' + btoa(email).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
+    const picture = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
+
+    this.onSignInSuccess({ name, email, sub, picture });
+  },
+
+  onSignInSuccess(user) {
+    this.currentUser = user;
+    localStorage.setItem('hf_google_user', JSON.stringify(user));
+    showToast(`Welcome, ${user.name}! ☁️ Account Synced`);
+    this.render();
+    State.loadUserData();
+  },
+
+  signOut() {
+    if (!confirm('Sign out of your Google Account?')) return;
+    this.currentUser = null;
+    localStorage.removeItem('hf_google_user');
+    showToast('Signed out of Google Account');
+    this.render();
+    State.loadUserData();
+  },
+
+  render() {
+    const gBtn   = document.getElementById('googleAuthBtn');
+    const uProf  = document.getElementById('userProfile');
+    const uAvatar= document.getElementById('userAvatar');
+    const uName  = document.getElementById('userName');
+
+    if (this.currentUser) {
+      if (gBtn) gBtn.classList.add('hidden');
+      if (uProf) uProf.classList.remove('hidden');
+      if (uAvatar) uAvatar.src = this.currentUser.picture;
+      if (uName) uName.textContent = this.currentUser.name;
+    } else {
+      if (gBtn) gBtn.classList.remove('hidden');
+      if (uProf) uProf.classList.add('hidden');
+    }
+  }
+};
+
 /* ─── BOOT ────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+  Auth.init();
   State.load();
   Tooltip.init();
   UI.init();
@@ -1093,5 +1170,5 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sg) io.observe(sg);
 
   // Keyboard shortcut hint
-  console.log('HabitFlow 2026 Keyboard Shortcuts:\n  ← → : Navigate months\n  T   : Jump to today\n  ⌘K  : Focus search\n  Esc : Close popups');
+  console.log('HabitFlow Keyboard Shortcuts:\n  ← → : Navigate months\n  T   : Jump to today\n  ⌘K  : Focus search\n  Esc : Close popups');
 });
