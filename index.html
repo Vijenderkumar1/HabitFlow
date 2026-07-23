@@ -34,11 +34,14 @@
     <div class="export-menu-wrap">
       <button class="btn-export" id="exportMenuBtn">Export ▾</button>
       <div class="export-dropdown" id="exportDropdown">
+        <div class="dropdown-header">EXPORT DOCUMENTS</div>
         <button onclick="App.exportPDF()">📄 Export PDF</button>
-        <button onclick="App.exportCSV()">📊 Export CSV</button>
-        <button onclick="App.backupJSON()">💾 Backup JSON</button>
-        <button onclick="App.restoreJSON()">📂 Restore JSON</button>
-        <button onclick="App.resetYear()">🗑 Reset Year</button>
+        <button onclick="App.exportCSV()">📊 Export CSV (Excel)</button>
+        <div class="dropdown-header">DATA BACKUP</div>
+        <button onclick="App.backupJSON()">💾 Save Data Backup</button>
+        <button onclick="App.restoreJSON()">📂 Restore Data Backup</button>
+        <div class="dropdown-divider"></div>
+        <button onclick="App.resetYear()" class="btn-danger-item">🗑 Reset Current Year</button>
       </div>
     </div>
   </div>
