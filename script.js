@@ -35,19 +35,26 @@ const State = {
   theme:        'dark',
 
   load() {
-    this.habits = JSON.parse(localStorage.getItem('hf_habits') || 'null') || [...DEFAULT_HABITS];
-    const studentHabits = [
-      { id:'study',       icon:'📚',  name:'Self Study',   color:'#6366F1' },
-      { id:'classes',     icon:'🏫',  name:'Classes',      color:'#8B5CF6' },
-      { id:'assignments', icon:'📝',  name:'Assignments',  color:'#EC4899' },
-      { id:'coding',      icon:'💻',  name:'Coding / Lab', color:'#10B981' },
-      { id:'revision',    icon:'📖',  name:'Revision',     color:'#F59E0B' },
-    ];
-    studentHabits.forEach(sh => {
-      if (!this.habits.some(h => h.id === sh.id)) {
-        this.habits.push(sh);
-      }
-    });
+    let loaded = JSON.parse(localStorage.getItem('hf_habits') || 'null');
+    if (!loaded || loaded.length === 0) {
+      this.habits = [...DEFAULT_HABITS];
+    } else {
+      DEFAULT_HABITS.forEach(dh => {
+        if (!loaded.some(h => h.id === dh.id)) {
+          loaded.push(dh);
+        }
+      });
+      const academicIds = ['study', 'classes', 'assignments', 'coding', 'revision'];
+      this.habits = loaded.sort((a, b) => {
+        const aIndex = academicIds.indexOf(a.id);
+        const bIndex = academicIds.indexOf(b.id);
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        return 0;
+      });
+    }
+    this.save();
     this.data   = JSON.parse(localStorage.getItem('hf_data')   || '{}');
     this.theme  = localStorage.getItem('hf_theme') || 'dark';
     this.currentYear  = parseInt(localStorage.getItem('hf_year')) || new Date().getFullYear();
