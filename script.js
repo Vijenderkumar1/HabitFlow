@@ -1090,27 +1090,70 @@ const Auth = {
     this.render();
 
     const gBtn = document.getElementById('googleAuthBtn');
-    if (gBtn) gBtn.addEventListener('click', () => this.signInPrompt());
+    if (gBtn) gBtn.addEventListener('click', () => this.openModal());
+
+    const cBtn = document.getElementById('googleAuthClose');
+    if (cBtn) cBtn.addEventListener('click', () => this.closeModal());
 
     const sBtn = document.getElementById('signOutBtn');
     if (sBtn) sBtn.addEventListener('click', () => this.signOut());
+
+    const overlay = document.getElementById('googleAuthOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) this.closeModal();
+      });
+    }
+
+    window.handleGoogleCredentialResponse = (response) => {
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        this.onSignInSuccess({
+          name: payload.name || payload.email.split('@')[0],
+          email: payload.email,
+          sub: payload.sub,
+          picture: payload.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(payload.email)}`
+        });
+      } catch(e) {
+        showToast('Google Sign-in failed');
+      }
+    };
   },
 
-  signInPrompt() {
-    const input = prompt("Sign in with Google - Enter your Google Account Name or Email:", "Student User");
-    if (!input) return;
-    const name  = input.includes('@') ? input.split('@')[0] : input;
-    const email = input.includes('@') ? input : input.toLowerCase().replace(/\s+/g,'') + '@gmail.com';
-    const sub   = 'g_' + btoa(email).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
-    const picture = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
+  openModal() {
+    const overlay = document.getElementById('googleAuthOverlay');
+    if (overlay) overlay.classList.remove('hidden');
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+      try {
+        google.accounts.id.prompt();
+      } catch(e){}
+    }
+  },
 
+  closeModal() {
+    const overlay = document.getElementById('googleAuthOverlay');
+    if (overlay) overlay.classList.add('hidden');
+  },
+
+  quickLogin(name, email) {
+    const sub = 'g_' + btoa(email).replace(/[^a-zA-Z0-9]/g,'').slice(0,12);
+    const picture = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(email)}`;
     this.onSignInSuccess({ name, email, sub, picture });
+  },
+
+  handleCustomFormSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('googleEmailInput').value.trim();
+    const name  = document.getElementById('googleNameInput').value.trim() || email.split('@')[0];
+    if (!email) return;
+    this.quickLogin(name, email);
   },
 
   onSignInSuccess(user) {
     this.currentUser = user;
     localStorage.setItem('hf_google_user', JSON.stringify(user));
     showToast(`Welcome, ${user.name}! ☁️ Account Synced`);
+    this.closeModal();
     this.render();
     State.loadUserData();
   },
