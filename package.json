@@ -1,0 +1,18 @@
+{
+  "name": "habitflow",
+  "version": "1.0.0",
+  "description": "HabitFlow - Android APK & PWA Habit Tracker App",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8085",
+    "build": "node C:\\Users\\deepa\\.gemini\\antigravity-ide\\brain\\bfcd8edf-5e1a-4cb8-8b4c-798d29d072f4\\scratch\\obfuscate.js"
+  },
+  "keywords": [
+    "habitflow",
+    "android",
+    "apk",
+    "pwa"
+  ],
+  "author": "Vijenderkumar1",
+  "license": "ISC"
+}
