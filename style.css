@@ -582,6 +582,42 @@ body::before {
 }
 .btn-add-habit:hover { background: rgba(124,111,255,0.1); border-style: solid; }
 
+/* Student Preset Chips */
+.preset-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border2);
+}
+.preset-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 8px;
+  display: block;
+}
+.preset-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preset-chip {
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.preset-chip:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
 .habits-list { display: flex; flex-direction: column; gap: 8px; }
 
 .habit-item {

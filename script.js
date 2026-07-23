@@ -12,11 +12,15 @@ const MONTH_NAMES = ['January','February','March','April','May','June',
 const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 const DEFAULT_HABITS = [
-  { id:'study',     icon:'📚',  name:'Study',      color:'#6366F1' },
-  { id:'gym',       icon:'🏋',  name:'Gym',       color:'#22C98A' },
-  { id:'ground',    icon:'🏃',  name:'Ground',     color:'#3BAFE8' },
-  { id:'handstand', icon:'🤸',  name:'Handstand',  color:'#FF8C42' },
-  { id:'yoga',      icon:'🧘',  name:'Yoga',       color:'#B47EFF' },
+  { id:'study',       icon:'📚',  name:'Self Study',   color:'#6366F1' },
+  { id:'classes',     icon:'🏫',  name:'Classes',      color:'#8B5CF6' },
+  { id:'assignments', icon:'📝',  name:'Assignments',  color:'#EC4899' },
+  { id:'coding',      icon:'💻',  name:'Coding / Lab', color:'#10B981' },
+  { id:'revision',    icon:'📖',  name:'Revision',     color:'#F59E0B' },
+  { id:'gym',         icon:'🏋',  name:'Gym',          color:'#22C98A' },
+  { id:'ground',      icon:'🏃',  name:'Ground',        color:'#3BAFE8' },
+  { id:'handstand',   icon:'🤸',  name:'Handstand',     color:'#FF8C42' },
+  { id:'yoga',        icon:'🧘',  name:'Yoga',          color:'#B47EFF' },
 ];
 
 /* ─── STATE ──────────────────────────────────────────────── */
@@ -32,9 +36,18 @@ const State = {
 
   load() {
     this.habits = JSON.parse(localStorage.getItem('hf_habits') || 'null') || [...DEFAULT_HABITS];
-    if (!this.habits.some(h => h.id === 'study')) {
-      this.habits.unshift({ id:'study', icon:'📚', name:'Study', color:'#6366F1' });
-    }
+    const studentHabits = [
+      { id:'study',       icon:'📚',  name:'Self Study',   color:'#6366F1' },
+      { id:'classes',     icon:'🏫',  name:'Classes',      color:'#8B5CF6' },
+      { id:'assignments', icon:'📝',  name:'Assignments',  color:'#EC4899' },
+      { id:'coding',      icon:'💻',  name:'Coding / Lab', color:'#10B981' },
+      { id:'revision',    icon:'📖',  name:'Revision',     color:'#F59E0B' },
+    ];
+    studentHabits.forEach(sh => {
+      if (!this.habits.some(h => h.id === sh.id)) {
+        this.habits.push(sh);
+      }
+    });
     this.data   = JSON.parse(localStorage.getItem('hf_data')   || '{}');
     this.theme  = localStorage.getItem('hf_theme') || 'dark';
     this.currentYear  = parseInt(localStorage.getItem('hf_year')) || new Date().getFullYear();
@@ -770,6 +783,19 @@ const UI = {
     document.getElementById('addHabitBtn').addEventListener('click',   () => overlay.classList.remove('hidden'));
     document.getElementById('addHabitClose').addEventListener('click', () => overlay.classList.add('hidden'));
     overlay.addEventListener('click', e => { if (e.target===e.currentTarget) overlay.classList.add('hidden'); });
+
+    // Preset chips
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const icon  = chip.dataset.icon;
+        const name  = chip.dataset.name;
+        const color = chip.dataset.color;
+        document.getElementById('newHabitIcon').value  = icon;
+        document.getElementById('newHabitName').value  = name;
+        document.getElementById('newHabitColor').value = color;
+      });
+    });
+
     document.getElementById('saveHabitBtn').addEventListener('click', () => {
       const icon  = document.getElementById('newHabitIcon').value.trim() || '⭐';
       const name  = document.getElementById('newHabitName').value;
