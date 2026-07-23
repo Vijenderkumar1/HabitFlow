@@ -63,13 +63,14 @@ body {
   overflow-x: hidden;
   line-height: 1.6;
 }
-button { cursor: pointer; font-family: inherit; }
-input, textarea {
+button { cursor: pointer; font-family: inherit; pointer-events: auto !important; }
+input, textarea, select, button, a {
   font-family: inherit;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
-  user-select: text !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  user-select: auto !important;
+  pointer-events: auto !important;
 }
 
 /* ── SCROLLBAR ── */
