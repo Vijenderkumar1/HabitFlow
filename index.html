@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>2026 Habit & Work Calendar</title>
+<link rel="stylesheet" href="style.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="app-header">
+  <div class="header-left">
+    <div class="app-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">HabitFlow <span class="logo-year">2026</span></span>
+    </div>
+    <div class="header-search">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search date… e.g. 20 July 2026" autocomplete="off"/>
+      <kbd class="search-kbd">⌘K</kbd>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" id="notifBtn" title="Enable Notifications">🔔</button>
+    <button class="icon-btn" id="printBtn" title="Print">🖨</button>
+    <div class="view-toggle">
+      <button class="vtbtn active" id="btnMonthView">Month</button>
+      <button class="vtbtn" id="btnYearView">Year</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light">🌙</button>
+    <div class="export-menu-wrap">
+      <button class="btn-export" id="exportMenuBtn">Export ▾</button>
+      <div class="export-dropdown" id="exportDropdown">
+        <button onclick="App.exportPDF()">📄 Export PDF</button>
+        <button onclick="App.exportCSV()">📊 Export CSV</button>
+        <button onclick="App.backupJSON()">💾 Backup JSON</button>
+        <button onclick="App.restoreJSON()">📂 Restore JSON</button>
+        <button onclick="App.resetYear()">🗑 Reset Year</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════ FILTER BAR ══════════════ -->
+<div class="filter-bar" id="filterBar">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <!-- dynamic habit filters injected by JS -->
+</div>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main class="app-main">
+
+  <!-- CALENDAR PANEL -->
+  <section class="calendar-panel" id="calendarPanel">
+
+    <!-- Month View Controls -->
+    <div class="cal-controls" id="calControls">
+      <button class="nav-btn" id="prevMonth">‹</button>
+      <h2 class="cal-title" id="calTitle">January 2026</h2>
+      <button class="nav-btn" id="nextMonth">›</button>
+    </div>
+
+    <!-- Month View -->
+    <div id="monthView" class="month-view">
+      <div class="weekday-row">
+        <span class="wd sun">Sun</span><span class="wd">Mon</span><span class="wd">Tue</span>
+        <span class="wd">Wed</span><span class="wd">Thu</span><span class="wd">Fri</span><span class="wd">Sat</span>
+      </div>
+      <div class="days-grid" id="daysGrid"></div>
+    </div>
+
+    <!-- Year View -->
+    <div id="yearView" class="year-view hidden">
+      <h2 class="year-heading">2026 — Year at a Glance</h2>
+      <div class="year-grid" id="yearGrid"></div>
+    </div>
+
+  </section>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Selected Day Info -->
+    <div class="glass-card selected-day-card" id="selectedDayCard">
+      <div class="selected-date" id="selectedDateLabel">Select a day</div>
+      <div class="day-meta">
+        <div class="mood-row">
+          <span class="meta-label">Mood</span>
+          <div class="mood-btns" id="moodBtns">
+            <button class="mood-btn" data-mood="😊" title="Happy">😊</button>
+            <button class="mood-btn" data-mood="😐" title="Neutral">😐</button>
+            <button class="mood-btn" data-mood="😔" title="Sad">😔</button>
+            <button class="mood-btn" data-mood="🔥" title="Fired up">🔥</button>
+            <button class="mood-btn" data-mood="😴" title="Tired">😴</button>
+          </div>
+        </div>
+        <div class="tracker-row">
+          <label class="meta-label">💧 Water</label>
+          <div class="water-track" id="waterTrack">
+            <button class="water-btn" data-ml="250">250ml</button>
+            <button class="water-btn" data-ml="500">500ml</button>
+            <button class="water-btn" data-ml="750">750ml</button>
+            <button class="water-btn" data-ml="1000">1L</button>
+            <button class="water-btn" data-ml="1500">1.5L</button>
+            <button class="water-btn" data-ml="2000">2L</button>
+            <button class="water-btn" data-ml="2500">2.5L</button>
+            <button class="water-btn" data-ml="3000">3L</button>
+          </div>
+          <span class="water-val" id="waterVal">— ml</span>
+        </div>
+        <div class="tracker-row">
+          <label class="meta-label">⚖️ Weight</label>
+          <input type="number" class="inline-input" id="weightInput" placeholder="kg" min="30" max="200" step="0.1"/>
+        </div>
+        <div class="tracker-row">
+          <label class="meta-label">⏱ Duration</label>
+          <input type="number" class="inline-input" id="durationInput" placeholder="min" min="0" max="300"/>
+        </div>
+        <div class="tracker-row notes-row">
+          <label class="meta-label">📝 Notes</label>
+          <textarea id="dayNotes" placeholder="Write a note for today…" rows="2"></textarea>
+        </div>
+        <div class="day-action-row">
+          <button class="btn-save-day" id="saveDayBtn">Save Day</button>
+          <button class="btn-reset-day" id="resetDayBtn">Reset Day</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Habits Panel -->
+    <div class="glass-card habits-card">
+      <div class="habits-header">
+        <h3 class="panel-title">Daily Work</h3>
+        <button class="btn-add-habit" id="addHabitBtn">+ Add Habit</button>
+      </div>
+      <div class="habits-list" id="habitsList"></div>
+    </div>
+
+  </aside>
+</main>
+
+<!-- ══════════════ STATS DASHBOARD ══════════════ -->
+<section class="stats-section">
+  <h2 class="stats-heading">Statistics Dashboard</h2>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="heatmap-section">
+    <h3 class="heatmap-title">Year Progress Heatmap</h3>
+    <div class="heatmap" id="heatmap"></div>
+  </div>
+</section>
+
+<!-- ══════════════ POPUPS ══════════════ -->
+
+<!-- Day Edit Popup -->
+<div class="overlay hidden" id="dayPopupOverlay">
+  <div class="popup glass-popup" id="dayPopup">
+    <div class="popup-header">
+      <h3 id="popupDate">15 March 2026</h3>
+      <button class="popup-close" id="popupClose">✕</button>
+    </div>
+    <div class="popup-habits" id="popupHabits"></div>
+    <div class="popup-footer">
+      <button class="btn-save-popup" id="savePopupBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Habit Popup -->
+<div class="overlay hidden" id="addHabitOverlay">
+  <div class="popup glass-popup" id="addHabitPopup">
+    <div class="popup-header">
+      <h3>New Habit</h3>
+      <button class="popup-close" id="addHabitClose">✕</button>
+    </div>
+    <div class="popup-body">
+      <div class="form-row">
+        <label>Icon (emoji)</label>
+        <input type="text" id="newHabitIcon" placeholder="🏋" maxlength="4"/>
+      </div>
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" id="newHabitName" placeholder="Habit name"/>
+      </div>
+      <div class="form-row">
+        <label>Color</label>
+        <input type="color" id="newHabitColor" value="#6C63FF"/>
+      </div>
+    </div>
+    <div class="popup-footer">
+      <button class="btn-save-popup" id="saveHabitBtn">Add Habit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="day-tooltip" id="dayTooltip"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Hidden file input for JSON restore -->
+<input type="file" id="restoreFileInput" accept=".json" style="display:none"/>
+
+<script src="script.js"></script>
+</body>
+</html>
