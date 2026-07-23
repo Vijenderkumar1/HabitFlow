@@ -1185,6 +1185,34 @@ const Auth = {
   }
 };
 
+/* ─── PWA APP INSTALL PROMPT ────────────────────────────── */
+let deferredPwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPwaPrompt = e;
+  const btn = document.getElementById('installAppBtn');
+  if (btn) btn.classList.remove('hidden');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('installAppBtn');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      if (!deferredPwaPrompt) {
+        showToast('App is ready! Tap "Add to Home Screen" on mobile 📲');
+        return;
+      }
+      deferredPwaPrompt.prompt();
+      const choice = await deferredPwaPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        showToast('HabitFlow App installed! 🎉');
+        btn.classList.add('hidden');
+      }
+      deferredPwaPrompt = null;
+    });
+  }
+});
+
 /* ─── BOOT ────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   Auth.init();

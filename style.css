@@ -150,6 +150,32 @@ body::before {
   white-space: nowrap;
 }
 
+/* Install PWA App Button */
+.btn-install-app {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(124,111,255,0.4);
+  background: linear-gradient(135deg, rgba(124,111,255,0.15), rgba(180,126,255,0.15));
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.btn-install-app:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(124,111,255,0.4);
+  transform: translateY(-1px);
+}
+.btn-install-app.hidden {
+  display: none !important;
+}
+
 /* Google Auth & User Profile */
 .user-auth-wrap {
   display: flex;
