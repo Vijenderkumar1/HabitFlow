@@ -56,6 +56,9 @@
     <div class="export-menu-wrap">
       <button class="btn-export" id="exportMenuBtn">Export ▾</button>
       <div class="export-dropdown" id="exportDropdown">
+        <div class="dropdown-header">MOBILE & DESKTOP APP</div>
+        <button onclick="App.downloadAPK()">📱 Download Android APK</button>
+        <button onclick="App.installPWA()">📲 Install App on Device</button>
         <div class="dropdown-header">EXPORT DOCUMENTS</div>
         <button onclick="App.exportPDF()">📄 Export PDF</button>
         <button onclick="App.exportCSV()">📊 Export CSV (Excel)</button>

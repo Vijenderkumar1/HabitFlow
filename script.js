@@ -996,8 +996,21 @@ const UI = {
   },
 };
 
-/* ─── EXPORT ──────────────────────────────────────────────── */
+/* ─── EXPORT & APP DOWNLOADS ─────────────────────────────── */
 const App = {
+  downloadAPK() {
+    const a = document.createElement('a');
+    a.href = './HabitFlow.apk';
+    a.download = 'HabitFlow.apk';
+    a.click();
+    showToast('📱 Downloading HabitFlow.apk installer...');
+  },
+
+  installPWA() {
+    const btn = document.getElementById('installAppBtn');
+    if (btn) btn.click();
+  },
+
   exportCSV() {
     const rows = [['Date','Habit','Completed','Mood','Study(hrs)','Water(ml)','Weight(kg)','Duration(min)','Notes']];
     Object.entries(State.data).sort().forEach(([date, day]) => {
