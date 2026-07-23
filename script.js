@@ -1000,8 +1000,9 @@ const UI = {
 const App = {
   downloadAPK() {
     const a = document.createElement('a');
-    a.href = './HabitFlow.apk';
+    a.href = 'https://raw.githubusercontent.com/Vijenderkumar1/HabitFlow/main/HabitFlow.apk';
     a.download = 'HabitFlow.apk';
+    a.target = '_blank';
     a.click();
     showToast('📱 Downloading HabitFlow.apk installer...');
   },
