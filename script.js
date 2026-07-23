@@ -12,6 +12,7 @@ const MONTH_NAMES = ['January','February','March','April','May','June',
 const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 const DEFAULT_HABITS = [
+  { id:'study',     icon:'📚',  name:'Study',      color:'#6366F1' },
   { id:'gym',       icon:'🏋',  name:'Gym',       color:'#22C98A' },
   { id:'ground',    icon:'🏃',  name:'Ground',     color:'#3BAFE8' },
   { id:'handstand', icon:'🤸',  name:'Handstand',  color:'#FF8C42' },
@@ -21,7 +22,7 @@ const DEFAULT_HABITS = [
 /* ─── STATE ──────────────────────────────────────────────── */
 const State = {
   habits:       [],        // [{id,icon,name,color}]
-  data:         {},        // {"YYYY-MM-DD": {habitId: bool, mood, water, weight, duration, notes}}
+  data:         {},        // {"YYYY-MM-DD": {habitId: bool, mood, water, studyHours, weight, duration, notes}}
   selectedDate: null,      // "YYYY-MM-DD"
   currentYear:  new Date().getFullYear(),
   currentMonth: 0,         // 0-11
@@ -31,6 +32,9 @@ const State = {
 
   load() {
     this.habits = JSON.parse(localStorage.getItem('hf_habits') || 'null') || [...DEFAULT_HABITS];
+    if (!this.habits.some(h => h.id === 'study')) {
+      this.habits.unshift({ id:'study', icon:'📚', name:'Study', color:'#6366F1' });
+    }
     this.data   = JSON.parse(localStorage.getItem('hf_data')   || '{}');
     this.theme  = localStorage.getItem('hf_theme') || 'dark';
     this.currentYear  = parseInt(localStorage.getItem('hf_year')) || new Date().getFullYear();
@@ -178,10 +182,12 @@ const Tooltip = {
     const done  = State.habits.filter(h => day[h.id]);
     const mood  = day.mood || '';
     const water = day.water ? `💧 ${day.water}ml` : '';
+    const study = day.studyHours ? `📚 Study: ${day.studyHours}h` : '';
     let html = `<div class="tooltip-title">${label} ${mood}</div>`;
     if (done.length === 0) html += '<span style="color:var(--text3)">No habits logged</span>';
     done.forEach(h => { html += `<div>${h.icon} ${h.name}</div>`; });
-    if (water) html += `<div style="color:#3BAFE8;margin-top:3px">${water}</div>`;
+    if (study) html += `<div style="color:#6366F1;margin-top:3px;font-weight:600">${study}</div>`;
+    if (water) html += `<div style="color:#3BAFE8;margin-top:2px">${water}</div>`;
     this.el.innerHTML = html;
     this.el.classList.add('show');
     this.move(e);
@@ -810,6 +816,13 @@ const UI = {
     const waterVal = document.getElementById('waterVal');
     if (waterVal) waterVal.textContent = day.water ? `${day.water} ml` : '— ml';
 
+    // Study Hours
+    document.querySelectorAll('.study-btn').forEach(btn => {
+      btn.classList.toggle('active', parseFloat(btn.dataset.hrs) === day.studyHours);
+    });
+    const sInp = document.getElementById('studyHoursInput');
+    if (sInp) sInp.value = day.studyHours || '';
+
     // Weight / Duration / Notes
     const wInp = document.getElementById('weightInput');
     const dInp = document.getElementById('durationInput');
@@ -844,13 +857,26 @@ const UI = {
       });
     });
 
+    // Study buttons
+    document.querySelectorAll('.study-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!State.selectedDate) { showToast('Select a date first 📅'); return; }
+        const day = State.getDay(State.selectedDate);
+        const hrs = parseFloat(btn.dataset.hrs);
+        day.studyHours = day.studyHours === hrs ? null : hrs;
+        State.save();
+        this.renderSelectedDay();
+      });
+    });
+
     // Save day button
     document.getElementById('saveDayBtn').addEventListener('click', () => {
       if (!State.selectedDate) { showToast('Select a date first 📅'); return; }
       const day = State.getDay(State.selectedDate);
-      day.weight   = parseFloat(document.getElementById('weightInput').value) || null;
-      day.duration = parseInt(document.getElementById('durationInput').value) || null;
-      day.notes    = document.getElementById('dayNotes').value.trim() || null;
+      day.studyHours = parseFloat(document.getElementById('studyHoursInput').value) || null;
+      day.weight     = parseFloat(document.getElementById('weightInput').value) || null;
+      day.duration   = parseInt(document.getElementById('durationInput').value) || null;
+      day.notes      = document.getElementById('dayNotes').value.trim() || null;
       State.save();
       showToast('✓ Day saved');
     });
@@ -925,12 +951,12 @@ const UI = {
 /* ─── EXPORT ──────────────────────────────────────────────── */
 const App = {
   exportCSV() {
-    const rows = [['Date','Habit','Completed','Mood','Water(ml)','Weight(kg)','Duration(min)','Notes']];
+    const rows = [['Date','Habit','Completed','Mood','Study(hrs)','Water(ml)','Weight(kg)','Duration(min)','Notes']];
     Object.entries(State.data).sort().forEach(([date, day]) => {
       State.habits.forEach(h => {
         rows.push([
           date, h.name, day[h.id] ? 'Yes' : 'No',
-          day.mood||'', day.water||'', day.weight||'', day.duration||'', day.notes||''
+          day.mood||'', day.studyHours||'', day.water||'', day.weight||'', day.duration||'', day.notes||''
         ]);
       });
     });

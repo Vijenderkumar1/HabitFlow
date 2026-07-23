@@ -526,6 +526,18 @@ body::before {
 .water-btn.active { background: rgba(59,175,232,0.2); border-color: #3BAFE8; color: #3BAFE8; }
 .water-val { font-size: 11px; color: #3BAFE8; font-weight: 600; }
 
+/* Study Hours */
+.study-track {
+  display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px;
+}
+.study-btn {
+  padding: 3px 8px; border-radius: 99px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2); font-size: 10px; font-weight: 500;
+  transition: all var(--transition); cursor: pointer;
+}
+.study-btn:hover  { border-color: #6366F1; color: #6366F1; }
+.study-btn.active { background: rgba(99,102,241,0.25); border-color: #6366F1; color: #818CF8; font-weight: 700; }
+
 /* Inputs */
 .tracker-row { display: flex; flex-direction: column; gap: 4px; }
 .inline-input {

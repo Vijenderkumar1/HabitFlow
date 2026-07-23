@@ -125,6 +125,18 @@
           <span class="water-val" id="waterVal">— ml</span>
         </div>
         <div class="tracker-row">
+          <label class="meta-label">📚 Study Hours</label>
+          <div class="study-track" id="studyTrack">
+            <button class="study-btn" data-hrs="0.5">0.5h</button>
+            <button class="study-btn" data-hrs="1">1h</button>
+            <button class="study-btn" data-hrs="2">2h</button>
+            <button class="study-btn" data-hrs="3">3h</button>
+            <button class="study-btn" data-hrs="4">4h</button>
+            <button class="study-btn" data-hrs="6">6h</button>
+          </div>
+          <input type="number" class="inline-input" id="studyHoursInput" placeholder="hrs (e.g. 3.5)" min="0" max="24" step="0.5"/>
+        </div>
+        <div class="tracker-row">
           <label class="meta-label">⚖️ Weight</label>
           <input type="number" class="inline-input" id="weightInput" placeholder="kg" min="30" max="200" step="0.1"/>
         </div>
